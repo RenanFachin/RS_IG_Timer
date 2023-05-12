@@ -35,6 +35,7 @@ export function Home() {
   // State para armazenar uma lista de ciclos
   const [cycles, setCycles] = useState<Cycle[]>([])
   const [activeCycleId, setActiveCycleId] = useState<string | null>(null) // State para armazenar a informação de um ciclo ativo no momento
+  const [amountSecondsPassed, setAmountSecondsPassed] = useState(0)
 
   const { register, handleSubmit, watch, reset } = useForm<NewCycleFormData>({
     resolver: zodResolver(newCycleFormValidationSchema),
@@ -61,7 +62,18 @@ export function Home() {
 
   // Percorrer os ciclos e ver qual item dentro do array tem o mesmo id do ciclo ativo
   const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
-  console.log(activeCycle)
+
+  // Covertendo minutos para segundos caso exista um ciclo ativo
+  const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0
+  const currentSeconds = activeCycle ? totalSeconds - amountSecondsPassed : 0
+
+  const minutesAmount = Math.floor(currentSeconds / 60)
+  const secondsAmount = currentSeconds % 60 // pegando o resto
+
+
+  // Convertendo para string para utilizar o método padStart para dividir os minutes nos 2 spans
+  const minutes = String(minutesAmount).padStart(2, '0')
+  const seconds = String(secondsAmount).padStart(2, '0')
 
   // Visualizando logs de erro gerados pela validação
   // console.log(formState.errors)
@@ -103,13 +115,13 @@ export function Home() {
         </FormContainer>
 
         <CountdownContainer>
-          <span>0</span>
-          <span>0</span>
+          <span>{minutes[0]}</span>
+          <span>{minutes[1]}</span>
 
           <Separator>:</Separator>
 
-          <span>0</span>
-          <span>0</span>
+          <span>{seconds[0]}</span>
+          <span>{seconds[1]}</span>
         </CountdownContainer>
 
         <StartCountdownButton disabled={isSubmitDisable} type="submit">
