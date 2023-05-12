@@ -20,7 +20,7 @@ const newCycleFormValidationSchema = zod.object({
   task: zod.string().min(1, 'Informa a tarefa'),
   minutesAmount: zod
     .number()
-    .min(5, 'O ciclo precisa ser de no mínimo 5 minutos')
+    .min(1, 'O ciclo precisa ser de no mínimo 5 minutos')
     .max(60, 'O ciclo precisa ser de no máximo 60 minutos'),
 })
 
@@ -33,6 +33,7 @@ interface Cycle {
   minutesAmount: number
   startDate: Date
   interruptedDate?: Date
+  finishedDate?: Date
 }
 
 export function Home() {
@@ -69,9 +70,9 @@ export function Home() {
 
   function handleInterruptCycle() {
     // Anotando no state o valor de interruptedDate para o atual caso este seja o cycle ativo
-    setCycles(
+    setCycles((state) =>
       // Percorrendo o state e fazendo a validação de o cycle.id passado ser o mesmo do activeCycleId atual no momento
-      cycles.map((cycle) => {
+      state.map((cycle) => {
         if (cycle.id === activeCycleId) {
           return { ...cycle, interruptedDate: new Date() }
         } else {
@@ -110,9 +111,29 @@ export function Home() {
 
     if (activeCycle) {
       interval = setInterval(() => {
-        setAmountSecondsPassed(
-          differenceInSeconds(new Date(), activeCycle.startDate),
+        const secondsDifference = differenceInSeconds(
+          new Date(),
+          activeCycle.startDate,
         )
+
+        // Anotando no state o valor de finishedDate para um cycle completado com sucesso
+        if (secondsDifference >= totalSeconds) {
+          setCycles((state) =>
+            state.map((cycle) => {
+              if (cycle.id === activeCycleId) {
+                return { ...cycle, finishedDate: new Date() }
+              } else {
+                return cycle
+              }
+            }),
+          )
+
+          setAmountSecondsPassed(totalSeconds)
+          clearInterval(interval)
+        } else {
+          // Só atualiza os segundos percorridos caso o cycle ainda esteja ativo
+          setAmountSecondsPassed(secondsDifference)
+        }
       }, 1000)
     }
 
@@ -120,7 +141,7 @@ export function Home() {
     return () => {
       clearInterval(interval)
     }
-  }, [activeCycle])
+  }, [activeCycle, totalSeconds, activeCycleId])
 
   // Utilizando o useEffect para alterar o valor do title da página conforme o timer
   useEffect(() => {
@@ -128,8 +149,6 @@ export function Home() {
       document.title = `${minutes}:${seconds}`
     }
   }, [minutes, seconds, activeCycle])
-
-  console.log(cycles)
 
   return (
     <HomeContainer>
@@ -156,7 +175,7 @@ export function Home() {
             type="number"
             placeholder="00"
             step={5}
-            min={5}
+            min={1}
             max={60}
             disabled={!!activeCycle}
             {...register('minutesAmount', { valueAsNumber: true })}
