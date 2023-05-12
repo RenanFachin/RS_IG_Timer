@@ -78,7 +78,6 @@ export function CyclesContextProvider({
 
     setAmountSecondsPassed(0) // Retornando o valor já passado de segundos (para evitar bugs ao criar um novo ciclo já contendo um ciclo ativo)
 
-    // reset()
   }
 
   function interruptCurrentCycle() {
