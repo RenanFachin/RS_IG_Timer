@@ -25,6 +25,7 @@ interface CyclesContextType {
   setSecondsPassed: (seconds: number) => void
   createNewCycle: (data: CreateCycleData) => void
   interruptCurrentCycle: () => void
+  cycles: Cycle[]
 }
 
 // Criando o contexto e tipando ele
@@ -77,7 +78,6 @@ export function CyclesContextProvider({
     setActiveCycleId(newCycle.id)
 
     setAmountSecondsPassed(0) // Retornando o valor já passado de segundos (para evitar bugs ao criar um novo ciclo já contendo um ciclo ativo)
-
   }
 
   function interruptCurrentCycle() {
@@ -106,6 +106,7 @@ export function CyclesContextProvider({
         setSecondsPassed,
         createNewCycle,
         interruptCurrentCycle,
+        cycles,
       }}
     >
       {children}
