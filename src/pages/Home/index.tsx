@@ -1,17 +1,21 @@
+// Lib de ícones
 import { HandPalm, Play } from 'phosphor-react'
+// Formulário e validação
+import { FormProvider, useForm } from 'react-hook-form'
+import * as zod from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
+// Contextos
+import { useContext } from 'react'
+import { CyclesContext } from '../../contexts/CyclesContext'
+// Estilização
 import {
   HomeContainer,
   StartCountdownButton,
   StopCountdownButton,
 } from './styles'
-
-import { useContext } from 'react'
+// Componentes
 import { NewCycleForm } from './components/NewCycleForm'
 import { Countdown } from './components/Countdown'
-import { FormProvider, useForm } from 'react-hook-form'
-import * as zod from 'zod'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { CyclesContext } from '../../contexts/CyclesContext'
 
 const newCycleFormValidationSchema = zod.object({
   task: zod.string().min(1, 'Informa a tarefa'),

@@ -1,8 +1,11 @@
+// Contexto
 import { useContext } from 'react'
+import { CyclesContext } from '../../contexts/CyclesContext'
+// Estilização
+import { HistoryContainer, HistoryList, Status } from './styles'
+// Manipulação de data
 import { formatDistanceToNow } from 'date-fns'
 import ptBr from 'date-fns/locale/pt-BR'
-import { HistoryContainer, HistoryList, Status } from './styles'
-import { CyclesContext } from '../../contexts/CyclesContext'
 
 export function History() {
   const { cycles } = useContext(CyclesContext)
@@ -31,7 +34,7 @@ export function History() {
                   <td>
                     {formatDistanceToNow(cycle.startDate, {
                       addSuffix: true,
-                      locale: ptBr
+                      locale: ptBr,
                     })}
                   </td>
                   <td>
