@@ -12,7 +12,8 @@ import {
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as zod from 'zod'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { differenceInSeconds } from 'date-fns'
 
 const newCycleFormValidationSchema = zod.object({
   task: zod.string().min(1, 'Informa a tarefa'),
@@ -29,6 +30,7 @@ interface Cycle {
   id: string
   task: string
   minutesAmount: number
+  startDate: Date
 }
 
 export function Home() {
@@ -50,12 +52,15 @@ export function Home() {
       id: String(new Date().getTime()),
       task: data.task,
       minutesAmount: data.minutesAmount,
+      startDate: new Date(),
     }
 
     // Mantendo os valores já armazenados no state e adicionando o próximop
     setCycles((state) => [...state, newCycle])
 
     setActiveCycleId(newCycle.id)
+
+    setAmountSecondsPassed(0) // Retornando o valor já passado de segundos (para evitar bugs ao criar um novo ciclo já contendo um ciclo ativo)
 
     reset()
   }
@@ -70,7 +75,6 @@ export function Home() {
   const minutesAmount = Math.floor(currentSeconds / 60)
   const secondsAmount = currentSeconds % 60 // pegando o resto
 
-
   // Convertendo para string para utilizar o método padStart para dividir os minutes nos 2 spans
   const minutes = String(minutesAmount).padStart(2, '0')
   const seconds = String(secondsAmount).padStart(2, '0')
@@ -81,6 +85,31 @@ export function Home() {
   // Observando o input 'task' em tempo real com a função watch
   const task = watch('task')
   const isSubmitDisable = !task
+
+  useEffect(() => {
+    // Declarando interval fora do escopo da condicional para que ele seja assinavel fora do escopo também
+    let interval: number
+
+    if (activeCycle) {
+      interval = setInterval(() => {
+        setAmountSecondsPassed(
+          differenceInSeconds(new Date(), activeCycle.startDate),
+        )
+      }, 1000)
+    }
+
+    // resetando o useEffect anterior caso o usuário faça um novo submit
+    return () => {
+      clearInterval(interval)
+    }
+  }, [activeCycle])
+
+  // Utilizando o useEffect para alterar o valor do title da página conforme o timer
+  useEffect(() => {
+    if (activeCycle) {
+      document.title = `${minutes}:${seconds}`
+    }
+  }, [minutes, seconds, activeCycle])
 
   return (
     <HomeContainer>
