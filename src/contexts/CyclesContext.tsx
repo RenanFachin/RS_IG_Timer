@@ -35,20 +35,48 @@ interface CyclesContextProviderProps {
   children: ReactNode
 }
 
+// Informações salvas dentro do reducer
+interface CycleState {
+  cycles: Cycle[]
+  activeCycleId: string | null
+}
+
 // Provider do contexto
 export function CyclesContextProvider({
   children,
 }: CyclesContextProviderProps) {
   // State para armazenar uma lista de ciclos
-  const [cycles, dispatch] = useReducer((state: Cycle[], action: any) => {
-    if (action.type === 'ADD_NEW_CYCLE') {
-      return [...state, action.payload.newCycle]
-    }
+  const [cyclesState, dispatch] = useReducer(
+    (state: CycleState, action: any) => {
+      if (action.type === 'ADD_NEW_CYCLE') {
+        return {
+          ...state,
+          cycles: [...state.cycles, action.payload.newCycle],
+          activeCycleId: action.payload.newCycle.id,
+        }
+      }
 
-    return state
-  }, [])
+      if (action.type === 'INTERRUPT_CURRENT_CYCLE') {
+        return {
+          ...state,
+          cycle: state.cycles.map((cycle) => {
+            if (cycle.id === state.activeCycleId) {
+              return { ...cycle, interruptedDate: new Date() }
+            } else {
+              return cycle
+            }
+          }),
+          activeCycleId: null,
+        }
+      }
 
-  const [activeCycleId, setActiveCycleId] = useState<string | null>(null) // State para armazenar a informação de um ciclo ativo no momento
+      return state
+    },
+    { cycles: [], activeCycleId: null }, // Valores iniciais do reducer
+  )
+
+  const { cycles, activeCycleId } = cyclesState
+
   const [amountSecondsPassed, setAmountSecondsPassed] = useState(0)
 
   // Percorrer os ciclos e ver qual item dentro do array tem o mesmo id do ciclo ativo
@@ -93,9 +121,6 @@ export function CyclesContextProvider({
     })
     // Mantendo os valores já armazenados no state e adicionando o próximop
     // setCycles((state) => [...state, newCycle])
-
-    setActiveCycleId(newCycle.id)
-
     setAmountSecondsPassed(0) // Retornando o valor já passado de segundos (para evitar bugs ao criar um novo ciclo já contendo um ciclo ativo)
   }
 
@@ -106,19 +131,6 @@ export function CyclesContextProvider({
         activeCycleId,
       },
     })
-    // Anotando no state o valor de interruptedDate para o atual caso este seja o cycle ativo
-    // setCycles((state) =>
-    //   // Percorrendo o state e fazendo a validação de o cycle.id passado ser o mesmo do activeCycleId atual no momento
-    //   state.map((cycle) => {
-    //     if (cycle.id === activeCycleId) {
-    //       return { ...cycle, interruptedDate: new Date() }
-    //     } else {
-    //       return cycle
-    //     }
-    //   }),
-    // )
-
-    setActiveCycleId(null)
   }
 
   return (
